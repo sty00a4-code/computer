@@ -1,17 +1,4 @@
-BASE_TYPE = type
----@param v any
----@return type|string
-function type(v)
-    if BASE_TYPE(v) == "table" then
-        local meta = getmetatable(v)
-        if BASE_TYPE(meta) == "table" then
-            if BASE_TYPE(meta.__name) == "string" then
-                return meta.__name
-            end
-        end
-    end
-    return BASE_TYPE(v)
-end
+require "class"
 
 ---@param v any
 ---@return boolean
@@ -25,7 +12,7 @@ end
 ---@return T?
 function checkType(v, ...)
     local vty = type(v)
-    for _, ty in ipairs({...}) do
+    for _, ty in ipairs({ ... }) do
         if vty == ty then
             return v
         end
@@ -37,7 +24,7 @@ end
 ---@return string?
 function checkLiteral(v, ...)
     if not some(checkType(v, "string")) then return end
-    for _, lit in ipairs({...}) do
+    for _, lit in ipairs({ ... }) do
         if v == lit then
             return v
         end
@@ -69,5 +56,7 @@ end
 ---@param ... type|string
 ---@return T?
 function errorCheckType(v, n, ...)
-    if not some(checkType(v, "number")) then error("expected table for argument #" .. n .. ", got " .. type(v), 3) end
+    if not some(checkType(v, ...)) then
+        error("expected table for argument #" .. n .. ", got " .. type(v), 3)
+    end
 end

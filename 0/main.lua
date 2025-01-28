@@ -1,6 +1,33 @@
 --- REQUIREMENTS
 --- modem on the one side to the chest array
 --- chest next to the computer on any side expect the chest arrays side
+local capp = require "capp"
+local cui = require "cui"
+
+if periphemu then
+    periphemu.remove("chest_0")
+    periphemu.remove("chest_1")
+    periphemu.remove("chest_2")
+    periphemu.remove("chest_3")
+    periphemu.remove("chest_4")
+    periphemu.remove("chest_5")
+    periphemu.remove("right")
+    periphemu.create("chest_0", "chest")
+    periphemu.create("chest_1", "chest")
+    periphemu.create("chest_2", "chest")
+    periphemu.create("chest_3", "chest")
+    periphemu.create("chest_4", "chest")
+    periphemu.create("chest_5", "chest")
+    periphemu.create("right", "chest")
+    local chest = peripheral.wrap("chest_0")
+    chest.setItem(1, { name = "iron_ingot", count = 64 })
+    chest.setItem(2, { name = "iron_ingot", count = 64 })
+    chest.setItem(3, { name = "iron_ingot", count = 64 })
+    local chest = peripheral.wrap("chest_1")
+    chest.setItem(1, { name = "iron_ingot", count = 64 })
+    local chest = peripheral.wrap("chest_5")
+    chest.setItem(1, { name = "steak", count = 10 })
+end
 
 ---@class Item : { name: string, count: integer, slots?: integer[][] }
 ---@class Chest
@@ -17,21 +44,21 @@ local function chests()
     local output = {}
     ---@class Chests
     local funcs = {
-        reload = function ()
+        reload = function()
             local new = { peripheral.find("minecraft:chest") }
             output = table.remove(new)
             chests = new
         end,
         ---@return Chest[]
-        chests = function ()
+        chests = function()
             return chests
         end,
         ---@return Chest
-        chest = function (index)
+        chest = function(index)
             return chests[index]
         end,
         ---@return integer
-        size = function ()
+        size = function()
             local size = 0
             for _, chest in ipairs(chests) do
                 size = size + chest.size()
@@ -39,7 +66,7 @@ local function chests()
             return size
         end,
         ---@return table<string, Item>
-        items = function ()
+        items = function()
             local items = {}
             for id, chest in ipairs(chests) do
                 for i, item in ipairs(chest.list()) do
@@ -49,14 +76,14 @@ local function chests()
                     else
                         items[item.name] = item
                         items[item.name].slots = {}
-                        items[item.name].slots[id] = {i}
+                        items[item.name].slots[id] = { i }
                     end
                 end
             end
             return items
         end,
         ---@return Item[]
-        list = function ()
+        list = function()
             local items = {}
             ---@type string[]
             local index = {}
@@ -69,7 +96,7 @@ local function chests()
                     else
                         items[item.name] = item
                         items[item.name].slots = {}
-                        items[item.name].slots[id] = {i}
+                        items[item.name].slots[id] = { i }
                     end
                 end
             end
@@ -81,13 +108,13 @@ local function chests()
         ---@param index integer
         ---@param slot integer
         ---@return Item
-        getItemDetail = function (index, slot)
+        getItemDetail = function(index, slot)
             return chests[index].getItemDetail(slot)
         end,
         ---@param index integer
         ---@param slot integer
         ---@return integer
-        getItemLimit = function (index, slot)
+        getItemLimit = function(index, slot)
             return chests[index].getItemLimit(slot)
         end,
         ---pushes items at `fromSlot` from the output chest to the chest at `index` (at `toSlot` or any)
@@ -95,7 +122,7 @@ local function chests()
         ---@param fromSlot integer
         ---@param limit? integer
         ---@param toSlot? integer
-        pushItems = function (index, fromSlot, limit, toSlot)
+        pushItems = function(index, fromSlot, limit, toSlot)
             chests[index].pushItems(peripheral.getName(output), fromSlot, limit, toSlot)
         end,
         ---pulls items at `fromSlot` in chest at `index` into the output chest (at `toSlot` or any)
@@ -103,7 +130,7 @@ local function chests()
         ---@param fromSlot integer
         ---@param limit? integer
         ---@param toSlot? integer
-        pullItems = function (index, fromSlot, limit, toSlot)
+        pullItems = function(index, fromSlot, limit, toSlot)
             output.pullItems(peripheral.getName(chests[index]), fromSlot, limit, toSlot)
         end,
     }
@@ -132,68 +159,50 @@ local function chests()
     funcs.reload()
     return funcs
 end
----@param chests Chests
----@return UI
-local function ui(chests)
-    local W, H = term.getSize()
-    local list = {}
-    local scroll = 0
-    local selected
-    local input = {
-        text = "",
-        prefi = "",
+
+---@type Chests
+local chests = chests()
+local app = capp.app()
+local gui = cui.layout({
+    direction = "vertical",
+    layout = {
+        1, 2
     }
-    ---@class UI
-    local funcs = {
-        handlers = {},
-    }
-    function funcs.event(event, ...)
-        local handler = funcs.handlers[event]
-        if type(handler) == "function" then
-            return handler(...)
-        end
-    end
-    function funcs.update()
-        if scroll < 0 then
-            scroll = 0
-        end
-        if scroll > #list - H - 2 then
-            scroll = #list - H - 2
-        end
-    end
-    function funcs.draw()
+}, {
+    cui.box({
+        color = "gray",
+    }, {
+        "1"
+    }),
+    cui.box({
+        color = "green"
+    }, {
+        "2"
+    }),
+    cui.box({
+        color = "blue",
+    }, {
+        "3"
+    }),
+    cui.box({
+        color = "blue",
+    }, {
+        "4"
+    }),
+})
+app:run(capp.program {
+    draw = function(_)
         term.setBackgroundColor(colors.black)
         term.setTextColor(colors.white)
         term.clear()
         term.setCursorPos(1, 1)
-        term.setBackgroundColor(colors.gray)
-        term.clearLine()
-        term.write(chests.size())
-    end
-    function funcs.run()
-        while true do
-            funcs.update()
-            funcs.draw()
-            ---@diagnostic disable-next-line: undefined-field
-            funcs.event(os.pullEvent())
+        local area = cui.area(1, 1, term.getSize())
+        gui:draw(area)
+    end,
+    events = function (_, name, ...)
+        if name == "terminate" then
+            error("Terminated", 3)
         end
+        gui:event(name, ...)
     end
-    funcs.handlers["char"] = function (char)
-        if char == "r" then
-            chests.reload()
-        end
-    end
-    funcs.handlers["peripheral"] = function ()
-        chests.reload()
-    end
-    funcs.handlers["peripheral_detach"] = funcs.handlers["peripheral"]
-    funcs.handlers["term_size"] = function ()
-        W, H = term.getSize()
-    end
-    return funcs
-end
-
----@type Chests
-local chests = chests()
-local ui = ui(chests)
-ui.run()
+})

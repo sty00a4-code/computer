@@ -61,7 +61,10 @@ function class(name, methods, ...)
         __call = function(self, ...)
             local object = {}
             if type(self.__new) == "function" then
-                self.__new(object, ...)
+                local success, err = pcall(self.__new, object, ...)
+                if not success then
+                    error(err, 2)
+                end
             end
             object.__class = self
             return setmetatable(object, meta)

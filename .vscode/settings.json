@@ -7,6 +7,15 @@
         "http",
         "fs",
         "shell",
-        "paintutils"
+        "paintutils",
+        "class",
+        "some",
+        "checkType",
+        "checkLiteral",
+        "checkRange",
+        "errorCheckType"
+    ],
+    "Lua.diagnostics.disable": [
+        "redefined-local"
     ]
 }
