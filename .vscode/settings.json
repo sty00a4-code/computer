@@ -3,6 +3,10 @@
         "peripheral",
         "term",
         "colors",
-        "periphemu"
+        "periphemu",
+        "http",
+        "fs",
+        "shell",
+        "paintutils"
     ]
 }
