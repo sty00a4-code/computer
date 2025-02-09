@@ -163,35 +163,56 @@ end
 ---@type Chests
 local chests = chests()
 local app = capp.app()
-local gui = cui.layout({
-    direction = "vertical",
-    layout = {
-        1, 2
-    }
-}, {
-    cui.box({
-        color = "gray",
+local W, H = term.getSize()
+local function main()
+    local list = {}
+    for _, item in ipairs({
+        ---@type Item
+        {
+            name = "minecraft:iron_ingot",
+            count = 64,
+            slots = {
+                [2] = 0
+            }
+        }
+    }) do
+        local name = item.name
+        if name:sub(1, #"minecraft:") == "minecraft:" then
+            name = name:sub(#"minecraft:" + 1)
+        end
+        table.insert(list, cui.box({
+
+        }, {
+            ("%s x%s"):format(name, item.count)
+        }))
+    end
+    return cui.layout({
+        direction = "vertical",
+        layout = {
+            1, H - 2, 1
+        }
     }, {
-        "1"
-    }),
-    cui.box({
-        color = "green"
-    }, {
-        "2"
-    }),
-    cui.box({
-        color = "blue",
-    }, {
-        "3"
-    }),
-    cui.box({
-        color = "blue",
-    }, {
-        "4"
-    }),
-})
+        cui.box({
+            color = "yellow",
+            fontColor = "black",
+        }, {
+            "[r] reload, [s] suck up"
+        }),
+        cui.box({
+            color = "black",
+        }, list),
+        cui.box({
+            color = "gray",
+        }, {
+            "input"
+        }),
+    })
+end
+local gui = main()
 app:run(capp.program {
     draw = function(_)
+        W, H = term.getSize()
+        gui = main()
         term.setBackgroundColor(colors.black)
         term.setTextColor(colors.white)
         term.clear()

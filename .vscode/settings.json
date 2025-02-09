@@ -13,7 +13,8 @@
         "checkType",
         "checkLiteral",
         "checkRange",
-        "errorCheckType"
+        "errorCheckType",
+        "errorCheckLiteral"
     ],
     "Lua.diagnostics.disable": [
         "redefined-local"

@@ -50,13 +50,36 @@ function checkRange(v, start, stop)
     return v
 end
 
+---@param t table
+---@param v any
+---@return boolean
+function table.contains(t, v)
+    for _, e in pairs(t) do
+        if e == v then
+            return true
+        end
+    end
+    return false
+end
+
 ---@generic T
 ---@param v T
 ---@param n integer|string
 ---@param ... type|string
 ---@return T?
 function errorCheckType(v, n, ...)
-    if not some(checkType(v, ...)) then
+    if not some(checkType(v, ...)) and not table.contains({...}, "nil") then
+        error("expected table for argument #" .. n .. ", got " .. type(v), 3)
+    end
+end
+
+---@generic T
+---@param v T
+---@param n integer|string
+---@param ... type|string
+---@return T?
+function errorCheckLiteral(v, n, ...)
+    if not some(checkLiteral(v, ...)) then
         error("expected table for argument #" .. n .. ", got " .. type(v), 3)
     end
 end

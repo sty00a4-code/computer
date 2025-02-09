@@ -70,8 +70,13 @@ local Area = class("cui.area", {
 ---@diagnostic disable-next-line: assign-type-mismatch
 mod.area = Area
 
+---@class cui.ElementConfig : table
+---@field margin? number
+---@field padding? number
+---@field limit? { width: { max: number, min: number, type: "percent"|"integer" }, height: { max: number, min: number, type: "percent"|"integer" } }
+
 ---@class cui.Element : { draw: cui.DrawMethod, event: cui.EventMethod, update: cui.UpdateMethod }
----@field config table
+---@field config cui.ElementConfig
 ---@field children cui.Child[]
 ---@field draw cui.DrawMethod<cui.Element>
 ---@field event cui.EventMethod<cui.Element>
@@ -79,12 +84,15 @@ mod.area = Area
 ---@field drawString fun(child: string, area: cui.Area)
 local Element = class("cui.element", {
     ---@param self cui.Element
-    ---@param config table
+    ---@param config cui.ElementConfig
     ---@param children cui.Child[]
     __new = function(self, config, children)
         errorCheckType(config, 1, "table")
         errorCheckType(children, 2, "table")
         self.config = config or {}
+        errorCheckType(config.margin, "config.margin", "number", "nil")
+        errorCheckType(config.padding, "config.padding", "number", "nil")
+        errorCheckType(config.limit, "config.limit", "table", "nil")
         self.children = children or {}
     end,
     ---@param child string
@@ -141,17 +149,32 @@ local Element = class("cui.element", {
 ---@diagnostic disable-next-line: assign-type-mismatch
 mod.element = Element
 
----@class cui.BoxConfig : table
+---@class cui.BoxConfig : cui.ElementConfig
 ---@field color? cc.ColorNames|cc.ColorValues
+---@field fontColor? cc.ColorNames|cc.ColorValues
 ---@field border? "line"|"double"|string
+
 ---@class cui.Box : cui.Element
 ---@field config cui.BoxConfig
 ---@field draw fun(self: cui.Box, area: cui.Area)
 ---@field borderCode fun(self: cui.Box)
 local Box = class("cui.box", {
     ---@param self cui.Box
+    ---@param config cui.BoxConfig
+    ---@param children cui.Child[]
+    __new = function(self, config, children)
+        ---@diagnostic disable-next-line: undefined-field
+        Element.__new(self, config, children)
+        errorCheckType(config.color, "config.color", "string", "number", "nil")
+        errorCheckType(config.color, "config.border", "string", "nil")
+    end,
+    ---@param self cui.Box
     ---@param area cui.Area
     draw = function(self, area)
+        term.setTextColor(colors.white)
+        if self.config.fontColor then
+            term.setTextColor(colorValue(self.config.fontColor))
+        end
         paintutils.drawFilledBox(area.x, area.y, area.x + area.w - 1, area.y + area.h - 1, colorValue(self.config.color))
         if self.config.border then
             local code = self:borderCode()
@@ -185,8 +208,18 @@ mod.box = Box
 ---@field draw fun(self: cui.Layout, area: cui.Area)
 local Layout = class("cui.layout", {
     ---@param self cui.Layout
+    ---@param config cui.LayoutConfig
+    ---@param children cui.Child[]
+    __new = function(self, config, children)
+        ---@diagnostic disable-next-line: undefined-field
+        Element.__new(self, config, children)
+        errorCheckLiteral(config.direction, "config.direction", "vertical", "horizontal")
+        errorCheckType(config.layout, "config.layout", "table", "nil")
+    end,
+    ---@param self cui.Layout
     ---@param area cui.Area
     draw = function(self, area)
+        term.setTextColor(colors.white)
         if self.config.layout then
             local offset = 0
             for i, child in pairs(self.children) do
