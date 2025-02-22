@@ -14,9 +14,12 @@
         "checkLiteral",
         "checkRange",
         "errorCheckType",
-        "errorCheckLiteral"
+        "errorCheckLiteral",
+        "keys",
+        "rednet"
     ],
     "Lua.diagnostics.disable": [
-        "redefined-local"
+        "redefined-local",
+        "deprecated"
     ]
 }
